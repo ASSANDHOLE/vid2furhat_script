@@ -1,0 +1,5 @@
+OpenVoice/
+*.zip
+checkpoints_v2/
+output_v2/
+processed/
