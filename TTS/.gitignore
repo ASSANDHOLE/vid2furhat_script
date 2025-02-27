@@ -8,6 +8,7 @@
 **/*.aac
 
 **/*.txt
+!**/requirements.txt
 test/
 
 # Python specific

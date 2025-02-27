@@ -15,6 +15,7 @@
 
 .idea/
 output/
+output*/
 resources/
 
 # VIM

@@ -2,8 +2,6 @@ import json
 import re
 from difflib import SequenceMatcher
 
-from mediapipe.python.packet_getter import get_bytes
-
 from main import drop_small_val
 from process import extract_speech_text_and_timestamps, extract_facial_expressions
 import numpy as np
@@ -22,6 +20,31 @@ EXPRESSIONS_TO_REMOVE = [
 ]
 
 EOS = "<eos>"
+
+def _has_min_change(a1, a2):
+    if a1 < 0.1:
+        if abs(a2 - a1) > 0.05:
+            return True
+    elif a1 < 0.3:
+        if abs(a2 - a1) > 0.08:
+            return True
+    else:
+        if abs(a2 - a1) > 0.1:
+            return True
+    return False
+
+def process_expressions(exp_list, min_change=_has_min_change):
+    res = [exp_list[0]]
+    current_exp_dict = deepcopy(exp_list[0][1])
+    for time, exp_dict in exp_list[1:]:
+        new_dict = {}
+        for key, value in exp_dict.items():
+            if min_change(current_exp_dict[key], value):
+                current_exp_dict[key] = value
+                new_dict[key] = value
+        if new_dict:
+            res.append((time, new_dict))
+    return res
 
 def align_words_lcs(original_words, new_words):
     """
@@ -177,10 +200,14 @@ def split_original_words(sentences, words):
     if not words:
         raise ValueError("No words found for last sentence.")
     cur_start_time = sentences[-1][1]
+    cur_sentence = []
     for w in words:
         w[1] -= cur_start_time
         w[2] -= cur_start_time
-    res.append(words)
+        if w[1] == w[2]:
+            continue
+        cur_sentence.append(w)
+    res.append(cur_sentence)
     end_deltas.append(1.0)
     return res, end_deltas, [s[1] for s in sentences]  # [start_time, ...]
 
@@ -272,7 +299,9 @@ def get_script_from_vid(video_path,
         data = load_tts_words_file(os.path.join(tts_words_dir, file))
         tts_words_data.append(data)
     words_list, end_deltas, start_times = split_original_words(sentences, words)
-    res = time_mapping_pipeline(words_list, tts_words_data, expressions, end_deltas, start_times)
+    tts_words_data = [[w for w in words if w[1] < w[2]] for words in tts_words_data]
+    res = time_mapping_pipeline(words_list, tts_words_data, expressions, end_deltas, start_times, target_fps=10)
+    res = [process_expressions(r) for r in res]
     scripts = generate_furhat_script(sentences, res, end_deltas,
                             url=url)
 
@@ -280,12 +309,14 @@ def get_script_from_vid(video_path,
 
 
 def main():
+    global BASE_OUTPUT_PATH
+    BASE_OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "output")
     video_path = "./st2_cut.mp4"
-    tts_words_dir = "./TTS/resources/new_out/"
+    tts_words_dir = "./TTS/resources/new_out2/"
     preloaded_text = "./text.json"
     preloaded_expressions = "./expressions.json"
     # url = "https://s3-eu-west-1.amazonaws.com/furhat-users/b1344330-fc7d-4fc0-b07e-3c44bd913b5a/audio/output_{}.wav"
-    url = "classpath:audio/output_{}.wav"
+    url = "classpath:audio/c1/output_{}.wav"
     # url = "http://127.0.0.1:8888/output_{}.wav"
     script, gestures = get_script_from_vid(video_path, preloaded_text=preloaded_text, preloaded_expressions=preloaded_expressions,
                                            tts_words_dir=tts_words_dir,

@@ -203,8 +203,10 @@ def main():
     resources_base = os.path.join(os.path.dirname(__file__), "..", "resources")
     models = get_model()
     models.update(geet_codec_model())
-    sample_audio_path = os.path.join(resources_base, f"new_intro.wav")  # Seems to work better with this sample
+    sample_audio_path = os.path.join(resources_base, "new_intro2.wav")  # Seems to work better with this sample
     prompt_text = read_text(os.path.join(resources_base, "new_intro.txt"))
+    output_base = os.path.join(resources_base, "new_out2")
+    os.makedirs(output_base, exist_ok=True)
     with open(os.path.join(resources_base, "..", "..", "output", "text.json"), "r") as f:
         data = json.load(f)
     sentences = [d[0].strip() for d in data["sentences"]]
@@ -225,8 +227,6 @@ def main():
                 pbar.close()  # Ensure tqdm closes before raising error
                 raise RuntimeError(f"TTS failed after {max_retry} retries for: {sentence}")
     # Concatenate all the generated speech waveforms ([T]) to a single waveform
-    output_base = os.path.join(resources_base, "new_out")
-    os.makedirs(output_base, exist_ok=True)
     for i, (a_out, wts) in enumerate(zip(final_out, word_ts_list)):
         a_out_path = os.path.join(output_base, f"output_{i}.wav")
         wts_out_path = os.path.join(output_base, f"output_{i}.json")

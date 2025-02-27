@@ -430,15 +430,17 @@ def generate_furhat_script(final_chunks, state_name="Acting", parent_state="Pare
 
 def main():
     global USE_BASE_OUTPUT_PATH
+    global BASE_OUTPUT_PATH
     USE_BASE_OUTPUT_PATH = True
-    video_path = "./st2_cut.mp4"
-    # final_chunks = get_script_from_vid(video_path, save_expressions="expressions.json", save_text="text.json")
-    final_chunks = get_script_from_vid(video_path, preloaded_text="text.json", preloaded_expressions="expressions.json")
+    BASE_OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "output_snl")
+    video_path = "./snl_cut.mp4"
+    final_chunks = get_script_from_vid(video_path, save_expressions="expressions.json", save_text="text.json")
+    # final_chunks = get_script_from_vid(video_path, preloaded_text="text.json", preloaded_expressions="expressions.json")
     state, gesture = generate_furhat_script(final_chunks)
 
-    with open("output/state.kt", "w") as f:
+    with open(_GET_OUTPUT_PATH("state.kt"), "w") as f:
         f.write(state)
-    with open("output/gesture.kt", "w") as f:
+    with open(_GET_OUTPUT_PATH("gesture.kt"), "w") as f:
         f.write(gesture)
 
 
