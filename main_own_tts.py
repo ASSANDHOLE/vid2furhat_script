@@ -281,7 +281,7 @@ def get_script_from_vid(video_path,
 
 def main():
     video_path = "./st2_cut.mp4"
-    tts_words_dir = "./TTS/resources/out/"
+    tts_words_dir = "./TTS/resources/new_out/"
     preloaded_text = "./text.json"
     preloaded_expressions = "./expressions.json"
     # url = "https://s3-eu-west-1.amazonaws.com/furhat-users/b1344330-fc7d-4fc0-b07e-3c44bd913b5a/audio/output_{}.wav"

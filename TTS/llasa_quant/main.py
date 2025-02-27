@@ -25,7 +25,7 @@ WP = None
 def extract_word_timestamps(audio_in):
     global WP
     if WP is None:
-        WP = whisper.load_model("large")
+        WP = whisper.load_model("turbo")
     result = WP.transcribe(audio_in, word_timestamps=True, verbose=None)
     word_segments = []
     for segment in result["segments"]:
@@ -200,11 +200,11 @@ def is_broken_tts(audio_in, target_text, sample_rate=16000):
 
 
 def main():
-    resources_base = os.path.join(os.path.dirname(__file__), "..", "..", "resources")
+    resources_base = os.path.join(os.path.dirname(__file__), "..", "resources")
     models = get_model()
     models.update(geet_codec_model())
-    sample_audio_path = os.path.join(resources_base, f"intro4.wav")  # Seems to work better with this sample
-    prompt_text = read_text(os.path.join(resources_base, "intro.txt"))
+    sample_audio_path = os.path.join(resources_base, f"new_intro.wav")  # Seems to work better with this sample
+    prompt_text = read_text(os.path.join(resources_base, "new_intro.txt"))
     with open(os.path.join(resources_base, "..", "..", "output", "text.json"), "r") as f:
         data = json.load(f)
     sentences = [d[0].strip() for d in data["sentences"]]
@@ -225,7 +225,7 @@ def main():
                 pbar.close()  # Ensure tqdm closes before raising error
                 raise RuntimeError(f"TTS failed after {max_retry} retries for: {sentence}")
     # Concatenate all the generated speech waveforms ([T]) to a single waveform
-    output_base = os.path.join(resources_base, "out")
+    output_base = os.path.join(resources_base, "new_out")
     os.makedirs(output_base, exist_ok=True)
     for i, (a_out, wts) in enumerate(zip(final_out, word_ts_list)):
         a_out_path = os.path.join(output_base, f"output_{i}.wav")
@@ -235,7 +235,7 @@ def main():
 
 
 def test():
-    resources_base = os.path.join(os.path.dirname(__file__), "..", "..", "resources")
+    resources_base = os.path.join(os.path.dirname(__file__), "..", "resources")
     audio_in = os.path.join(resources_base, "output_llasa_quant_all.wav")
     word_segments = extract_word_timestamps(audio_in)
     with open(os.path.join(resources_base, "output_llasa_quant_all.json"), "w") as f:
