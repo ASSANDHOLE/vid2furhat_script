@@ -234,13 +234,5 @@ def main():
         save_word_timestamps(wts, wts_out_path)
 
 
-def test():
-    resources_base = os.path.join(os.path.dirname(__file__), "..", "resources")
-    audio_in = os.path.join(resources_base, "output_llasa_quant_all.wav")
-    word_segments = extract_word_timestamps(audio_in)
-    with open(os.path.join(resources_base, "output_llasa_quant_all.json"), "w") as f:
-        json.dump(word_segments, f, indent=4)
-
 if __name__ == "__main__":
-    # test()
     main()
